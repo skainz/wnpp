@@ -1,0 +1,86 @@
+.TH "unixcat" 1 "29 Dec 2013"
+.SH "NAME"
+unixcat - access mk-livestatus via unix socket
+.SH "SYNOPSIS"
+.B unixcat  
+.IR socket 
+.SH "DESCRIPTION"
+.B unixcat
+allows read/write access to the unix socket created by the mk-livestatus Nagios broker module. The 
+.IR socket
+parameter specifies the unix socket created by mk-livestatus. This is usually 
+.IR /var/lib/nagios3/rw/live .
+Please see your Nagios/Icinga config file for this value.
+.PP 
+Commands given to 
+.B unixcat
+are written in
+.B LQL - The Livestatus Query Language. 
+LQL - pronounced "Liquel" as in "liquid" - is a simple language for telling Livestatus what data you want and how it should be formatted. It does much the same as SQL but does it in another, simpler way. Its syntax reflects (but is not compatible to) HTTP. 
+.PP
+Each query consists of:
+.PP
+.RS
+ A command consisting of the word 
+.B GET 
+and the name of a table.
+ An arbitrary number of header lines consisting of a keyword, a colon and arguments.
+ An empty line or the end of transmission (i.e. the client closes the sending direction of the socket)
+.RE
+.PP
+All keywords including GET are case sensitive. Lines are terminated by single linefeeds (no <CR>). The current version of Livestatus implements the following tables:
+.PP
+.RS
+\fIhosts\fR - your Nagios hosts
+.br
+\fIservices\fR - your Nagios services, joined with all data from hosts
+.br
+\fIhostgroups\fR - you Nagios hostgroups
+.br
+\fIservicegroups\fR - you Nagios servicegroups
+.br
+\fIcontactgroups\fR - you Nagios contact groups
+.br
+\fIservicesbygroup\fR - all services grouped by service groups
+.br
+\fIservicesbyhostgroup\fR - all services grouped by host groups
+.br
+\fIhostsbygroup\fR - all hosts group by host groups
+.br
+\fIcontacts\fR - your Nagios contacts
+.br
+\fIcommands\fR - your defined Nagios commands
+.br
+\fItimeperiods\fR - time period definitions (currently only name and alias)
+.br
+\fIdowntimes\fR - all scheduled host and service downtimes, joined with data from hosts and services.
+.br
+\fIcomments\fR - all host and service comments
+.br
+\fIlog\fR - a transparent access to the nagios logfiles (include archived ones)ones.
+.br
+\fIstatus\fR - general performance and status information. This table contains exactly one dataset.
+.br
+\fIcolumns\fR - a complete list of all tables and columns available via Livestatus, including descriptions.
+.br
+\fIstatehist\fR - statistics for hosts and services, joined with data from hosts, services and log.
+.RE
+.PP
+Like in an SQL database all tables consist of a number of columns. If you query the table without any parameters, you retrieve all available columns in alphabetical order. The first line of the answer contains the names of the columns. Please note that the available columns will change from version to version. Thus you should \fBnot\fR depend on a certain order of the columns! 
+
+
+
+
+.SH "EXAMPLE"
+Get a table of all hosts:
+.PP
+.nf
+.RS
+root@linux# echo 'GET hosts' | unixcat /var/lib/nagios3/rw/live
+acknowledged;action_url;address;alias;check_command;check_period;checks_enabled;contacts;in_check_period;in_notification_period;is_flapping;last_check;last_state_change;name;notes;notes_url;notification_period;scheduled_downtime_depth;state;total_services
+0;/nagios/pnp/index.php?host=$HOSTNAME$;127.0.0.1;Acht;check-mk-ping;;1;check_mk,hh;1;1;0;1256194120;1255301430;Acht;;;24X7;0;0;7
+0;/nagios/pnp/index.php?host=$HOSTNAME$;127.0.0.1;DREI;check-mk-ping;;1;check_mk,hh;1;1;0;1256194120;1255301431;DREI;;;24X7;0;0;1
+0;/nagios/pnp/index.php?host=$HOSTNAME$;127.0.0.1;Drei;check-mk-ping;;1;check_mk,hh;1;1;0;1256194120;1255301435;Drei;;;24X7;0;0;4
+.RE
+.SH "SEE ALSO"
+
