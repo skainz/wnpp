@@ -1,7 +1,8 @@
 wnpp
 ====
-Writing missing Manpageg
+Writing missing manpages.
 
 GOAL
 ====
-1 man a week
+Write  1 new manual page a week.
+
