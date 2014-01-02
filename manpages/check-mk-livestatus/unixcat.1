@@ -1,0 +1,125 @@
+.TH "unixcat" 1 "29 Dec 2013"
+.SH "NAME"
+unixcat - access mk-livestatus via unix socket
+.SH "SYNOPSIS"
+.B unixcat  
+.IR socket 
+.SH "DESCRIPTION"
+.B unixcat
+allows read/write access to the unix socket created by the mk-livestatus Nagios broker module. The 
+.IR socket
+parameter specifies the unix socket created by mk-livestatus. This is usually 
+.IR /var/lib/nagios3/rw/live .
+Please see your Nagios/Icinga config file for your actual value.
+.PP 
+Commands given to 
+.B unixcat
+are written in
+.B LQL - The Livestatus Query Language. 
+LQL - pronounced "Liquel" as in "liquid" - is a simple language for telling Livestatus what data you want and how it should be formatted. It does much the same as SQL but does it in another, simpler way. Its syntax reflects (but is not compatible to) HTTP. 
+.PP
+Each query consists of:
+.PP
+
+ A command consisting of the word 
+.B GET 
+and the name of a table.
+ An arbitrary number of header lines consisting of a keyword, a colon and arguments.
+ An empty line or the end of transmission (i.e. the client closes the sending direction of the socket)
+
+.PP
+All keywords including GET are case sensitive. Lines are terminated by single linefeeds (no <CR>). The current version of Livestatus implements the following tables:
+.PP
+.TP 7
+.IR hosts
+your Nagios hosts
+.TP 10
+.IR services
+your Nagios services, joined with all data from hosts
+.TP 12
+.IR hostgroups
+you Nagios hostgroups
+.TP 15
+.IR servicegroups
+you Nagios servicegroups
+.TP 15
+.IR contactgroups
+you Nagios contact groups
+.TP 17
+.IR servicesbygroup
+all services grouped by service groups
+.TP 21
+.IR servicesbyhostgroup
+all services grouped by host groups
+.TP 14
+.IR hostsbygroup
+all hosts group by host groups
+.TP 10
+.IR contacts
+your Nagios contacts
+.TP 10
+.IR commands
+your defined Nagios commands
+.TP 13
+.IR timeperiods
+time period definitions (currently only name and alias)
+.TP 11
+.IR downtimes
+all scheduled host and service downtimes, joined with data from hosts and services
+.TP 10
+.IR comments
+all host and service comments
+.TP 5
+.IR log
+a transparent access to the nagios logfiles (include archived ones)
+.TP 8
+.IR status
+general performance and status information. This table contains exactly one dataset.
+.TP 9
+.IR columns
+a complete list of all tables and columns available via Livestatus, including descriptions.
+.TP 11
+.IR statehist
+statistics for hosts and services, joined with data from hosts, services and log.
+.PP
+Like in an SQL database all tables consist of a number of columns. If you query the table without any parameters, you retrieve all available columns in alphabetical order. The first line of the answer contains the names of the columns. Please note that the available columns will change from version to version. Thus you should \fBnot\fR depend on a certain order of the columns! 
+.PP
+.B Selecting which columns to retrieve
+.PP
+When you write an application using Livestatus, you probably need the information just from selected columns. Add the header 
+.IR Columns
+to select which columns to retrieve. This also defines the order of the columns in the answer. The following example retrieves just the columns 
+.IR name 
+and 
+.IR alias
+: 
+.PP
+GET contacts
+.br
+Columns: name alias
+.PP
+To test this using 
+.B unixcat
+, simply put both lines into a text file
+.IR query
+and read it using shell redirection (<) :
+.PP
+.nf
+.RS
+root@linux# unixcat < query /var/lib/nagios3/rw/live
+check_mk;check_mk dummy contact
+hh;Harri Hirsch
+.RE
+.SH "EXAMPLE"
+Get a table of all hosts:
+.PP
+.nf
+.RS
+root@linux# echo 'GET hosts' | unixcat /var/lib/nagios3/rw/live
+acknowledged;action_url;address;alias;check_command;check_period;checks_enabled;contacts;in_check_period;in_notification_period;is_flapping;last_check;last_state_change;name;notes;notes_url;notification_period;scheduled_downtime_depth;state;total_services
+0;/nagios/pnp/index.php?host=$HOSTNAME$;127.0.0.1;Acht;check-mk-ping;;1;check_mk,hh;1;1;0;1256194120;1255301430;Acht;;;24X7;0;0;7
+0;/nagios/pnp/index.php?host=$HOSTNAME$;127.0.0.1;DREI;check-mk-ping;;1;check_mk,hh;1;1;0;1256194120;1255301431;DREI;;;24X7;0;0;1
+0;/nagios/pnp/index.php?host=$HOSTNAME$;127.0.0.1;Drei;check-mk-ping;;1;check_mk,hh;1;1;0;1256194120;1255301435;Drei;;;24X7;0;0;4
+.RE
+.SH "SEE ALSO"
+
