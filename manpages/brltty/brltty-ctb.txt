@@ -1,0 +1,33 @@
+ Mario Lang Tue, 16 Apr 2013 01:55:56 -0700
+
+Hi.
+
+I just want to introduce a new feature which has just been committed to
+the subversion repository: brltty-ctb can now generate and verify
+so-colled contraction verification tables.  The idea is simple: You can
+use either a word list (/usr/share/dict/words and friends) or some
+other large piece of text in your language to generate a contraction
+verification table which contains the original text + the actual
+contraction of the input, line by line.
+If you now apply changes to your actual contraction table, you can
+easily verify that they did not introduce any unexpected matches by
+verifying the previously written verification table against your
+contraction table after you applied your change.
+This will list every line of your original input which is now contracted
+differently.
+
+
+programm output:
+skainz@zidpc9027:~/tmp/brltty/Programs$ ./brltty-ctb -h
+Usage: brltty-ctb [option ...] [{input-file | -} ...]
+-c file      --contraction-table=   Contraction table.
+-t file      --text-table=          Text table.
+-v file      --verification-table=  Contraction verification table.
+-r           --reformat-text        Reformat input.
+-w columns   --output-width=        Maximum length of an output line.
+-f           --force-output         Force immediate output.
+-h           --help                 Print a usage summary (commonly used
+                                    options only), and then exit.
+-H           --full-help            Print a usage summary (all options), and
+                                    then exit.
+
